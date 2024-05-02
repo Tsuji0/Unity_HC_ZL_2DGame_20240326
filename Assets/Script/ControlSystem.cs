@@ -48,11 +48,16 @@ namespace Tsuji
             //區域變數 h = 輸入 的 取得軸向(軸向名稱)
             float h = Input.GetAxis("Horizontal");
             float v = Input.GetAxis("Vertical");
-            //剛體 的 加速度 = 三維向量
-            rig.velocity = new Vector3(h, 0, v) * moveSpeed;
-            //magnitude 將三維向量轉為浮點數
-            //動畫 的 設定浮點數(參數名稱，浮點數值)
-            ani.SetFloat(parMove, rig.velocity.magnitude / moveSpeed);
+            MoveAndAnimation(h, v);
+            Flip(h);
+        }
+
+        /// <summary>
+        /// 翻面方法
+        /// </summary>
+        /// <param name="h">玩家的水平線</param>
+        private void Flip(float h)
+        {
             //如果 h > 0 角度設定為0 (右)
             //如果 h < 0 角度設定為180(左)
             //三元運算子
@@ -63,10 +68,25 @@ namespace Tsuji
             //整數 角度 = 當 h > 0 結果 0 度角，否則 180 度角
             int angle = h > 0 ? 0 : 180;
 
+
             //控制角度的方法
             //transform 此物件的變形資訊 : 座標、角度、尺寸
             //eulerAngles 歐拉角度
             transform.eulerAngles = new Vector3(0, angle, 0);
+        }
+
+        /// <summary>
+        /// 移動與動畫
+        /// </summary>
+        /// <param name="h"></param>
+        /// <param name="v"></param>
+        private void MoveAndAnimation(float h, float v)
+        {
+            //剛體 的 加速度 = 三維向量
+            rig.velocity = new Vector3(h, 0, v) * moveSpeed;
+            //magnitude 將三維向量轉為浮點數
+            //動畫 的 設定浮點數(參數名稱，浮點數值)
+            ani.SetFloat(parMove, rig.velocity.magnitude / moveSpeed);
         }
     }
 }
