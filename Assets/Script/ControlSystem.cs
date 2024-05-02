@@ -14,6 +14,10 @@ namespace Tsuji
         private float moveSpeed = 3.5f;
         [SerializeField, Header("跳躍高度"), Range(0, 1000)]
         private float jump = 350;
+        [SerializeField, Header("剛體元件")]
+        private Rigidbody rig;
+        [SerializeField, Header("動畫元件")]
+        private Animator ani;
 
         //string 字串:存放文字資料
         private string parMove = "移動數值";
@@ -36,7 +40,33 @@ namespace Tsuji
         //更新事件:開始事件後一秒約60次
         private void Update()
         {
-            //print("<color=#b9b9ff>更新事件</color>");
+            //軸向名稱
+            //上下 WS - 垂直 (Vertical)
+            //左右 AD - 水平 (Horizontal)
+            //左 A -1, 右 D +1, 沒按 0
+
+            //區域變數 h = 輸入 的 取得軸向(軸向名稱)
+            float h = Input.GetAxis("Horizontal");
+            float v = Input.GetAxis("Vertical");
+            //剛體 的 加速度 = 三維向量
+            rig.velocity = new Vector3(h, 0, v) * moveSpeed;
+            //magnitude 將三維向量轉為浮點數
+            //動畫 的 設定浮點數(參數名稱，浮點數值)
+            ani.SetFloat(parMove, rig.velocity.magnitude / moveSpeed);
+            //如果 h > 0 角度設定為0 (右)
+            //如果 h < 0 角度設定為180(左)
+            //三元運算子
+            //布林值 ? 布林值為真結果 : 布林值為假結果
+
+            //如果 h 絕對值 後 < 0.1 就跳出
+            if (Mathf.Abs(h) < 0.1f) return;
+            //整數 角度 = 當 h > 0 結果 0 度角，否則 180 度角
+            int angle = h > 0 ? 0 : 180;
+
+            //控制角度的方法
+            //transform 此物件的變形資訊 : 座標、角度、尺寸
+            //eulerAngles 歐拉角度
+            transform.eulerAngles = new Vector3(0, angle, 0);
         }
     }
 }
