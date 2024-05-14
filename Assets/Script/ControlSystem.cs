@@ -18,11 +18,26 @@ namespace Tsuji
         private Rigidbody rig;
         [SerializeField, Header("動畫元件")]
         private Animator ani;
+        [SerializeField, Header("檢查地板尺寸")]
+        private Vector3 checkGroundSize;
+        [SerializeField, Header("檢查地板位移")]
+        private Vector3 checkGroundOffset;
+        [SerializeField, Header("地板圖層")]
+        private LayerMask layerGround;
 
         //string 字串:存放文字資料
         private string parMove = "移動數值";
-        private string parJump = "觸發跳躍"; 
+        private string parJump = "觸發跳躍";
         #endregion
+
+        //繪製圖示事件:在編輯器 Unity 內繪製圖示輔助
+        private void OnDrawGizmos()
+        {
+            //決定顏色(紅，綠，藍，透明度) 0 ~ 1
+            Gizmos.color = new Color(1, 0.2f, 0.2f, 0.5f);
+            //繪製圖示(角色座標 + 位移，尺寸)
+            Gizmos.DrawCube(transform .position + checkGroundOffset , checkGroundSize ); 
+        }
 
         //喚醒事件:播放遊戲後執行一次
         private void Awake()
@@ -50,6 +65,7 @@ namespace Tsuji
             float v = Input.GetAxis("Vertical");
             MoveAndAnimation(h, v);
             Flip(h);
+            Jump();
         }
 
         /// <summary>
@@ -80,13 +96,49 @@ namespace Tsuji
         /// </summary>
         /// <param name="h"></param>
         /// <param name="v"></param>
+        /// 
         private void MoveAndAnimation(float h, float v)
         {
             //剛體 的 加速度 = 三維向量
-            rig.velocity = new Vector3(h, 0, v) * moveSpeed;
+            rig.velocity = new Vector3(h * moveSpeed ,rig.velocity.y , v * moveSpeed);
             //magnitude 將三維向量轉為浮點數
             //動畫 的 設定浮點數(參數名稱，浮點數值)
             ani.SetFloat(parMove, rig.velocity.magnitude / moveSpeed);
         }
+
+       
+        /// <summary>
+        /// 是否在地板上
+        /// </summary>
+        /// <returns></returns>
+        private bool IsGrounded()
+        {
+            //物理，立方體覆蓋(座標，尺寸半徑，角度，指定圖層)
+            Collider[] hits = Physics.OverlapBox(
+                transform.position + checkGroundOffset, 
+                checkGroundSize / 2, Quaternion.identity);
+
+            //print($"<color=#3f6>碰到的物件:{hits[0]?.name}</color>");
+            //碰到物件的數量 大於0 表示有碰到地板
+
+
+            return hits.Length > 0;
+        }
+
+        private void Jump()
+        {  
+            //如果 在地板上 並按下空白鍵
+            if (IsGrounded() && Input.GetKeyDown(KeyCode.Space))
+            {
+                //跳躍
+                rig.AddForce(Vector3.up * jump);
+                //動畫 設定觸發參數(觸發參數名稱)
+                ani.SetTrigger(parJump);
+            }
+        
+        }
+           
+        
+        
     }
 }
